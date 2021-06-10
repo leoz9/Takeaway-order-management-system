@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ischoolbar.programmer.dao.FoodDao">
+	<!-- 菜品插入操作 -->
+	<insert id="add" parameterType="com.ischoolbar.programmer.entity.Food">
+		insert into food(id,categoryId,name,price,imageUrl,des) values(null,#{categoryId},#{name},#{price},#{imageUrl},#{des})
+	</insert>
+	<!-- 菜品编辑操作 -->
+	<update id="edit" parameterType="com.ischoolbar.programmer.entity.Food">
+		update food set categoryId = #{categoryId},name = #{name},price = #{price},imageUrl = #{imageUrl},des = #{des} where id = #{id}
+	</update>
+	<!-- 菜品销量增加 -->
+	<update id="updateSels" parameterType="Long">
+		update food set sels = sels + #{arg1} where id = #{arg0}
+	</update>
+	<!-- 菜品信息搜索查询 -->
+	<select id="findList" parameterType="Map" resultType="com.ischoolbar.programmer.entity.Food">
+		select * from food where 1=1 
+		<if test="name != null">
+			and name like '%${name}%' 
+		</if>
+		<if test="categoryId != null">
+			and categoryId = #{categoryId}  
+		</if>
+		<if test="offset != null and pageSize != null">
+			limit #{offset},#{pageSize}
+		</if>
+	</select>
+	<!-- 菜品单个信息查询 -->
+	<select id="find" parameterType="Long" resultType="com.ischoolbar.programmer.entity.Food">
+		select * from food where id = #{value}
+	</select>
+	<!-- 模糊搜索总条数 -->
+	<select id="getTotal" parameterType="Map" resultType="Integer">
+		select count(*) from food where 1=1   
+		<if test="name != null">
+			and name like '%${name}%' 
+		</if>
+		<if test="categoryId != null">
+			and categoryId = #{categoryId}  
+		</if>
+	</select>
+	<!-- 删除菜品信息 -->
+	<delete id="delete" parameterType="Long">
+		delete from food where id = #{value}
+	</delete>
+</mapper>

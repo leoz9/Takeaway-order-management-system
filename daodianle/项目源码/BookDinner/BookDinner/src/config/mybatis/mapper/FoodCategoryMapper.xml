@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ischoolbar.programmer.dao.FoodCategoryDao">
+	<!-- 多表联合查询字段处理 -->
+	<resultMap id="foodListMap" type="com.ischoolbar.programmer.entity.FoodCategory">
+		<id property="id" column="fc_id" />
+		<result property="name" column="fc_name" />
+		<collection property="foodList" ofType="com.ischoolbar.programmer.entity.Food">
+				<id property="id" column="f_id" />
+				<result property="categoryId" column="f_categoryId" />
+				<result property="name" column="f_name" />
+				<result property="price" column="f_price" />
+				<result property="sels" column="f_sels" />
+				<result property="imageUrl" column="f_imageUrl" />
+				<result property="des" column="f_des" />
+		</collection>
+	</resultMap>
+	
+	
+	<!-- 菜品分类插入操作 -->
+	<insert id="add" parameterType="com.ischoolbar.programmer.entity.FoodCategory">
+		insert into food_category(id,name) values(null,#{name})
+	</insert>
+	<!-- 菜品分类编辑操作 -->
+	<update id="edit" parameterType="com.ischoolbar.programmer.entity.FoodCategory">
+		update food_category set name = #{name} where id = #{id}
+	</update>
+	<!-- 菜品分类信息搜索查询 -->
+	<select id="findList" parameterType="Map" resultType="com.ischoolbar.programmer.entity.FoodCategory">
+		select * from food_category 
+		<if test="name != null">
+			where name like '%${name}%' 
+		</if>
+		<if test="offset != null and pageSize != null">
+			limit #{offset},#{pageSize}
+		</if>
+	</select>
+	<!-- 获取所有的菜品分类信息 -->
+	<select id="findAll" parameterType="Map" resultMap="foodListMap">
+		select 
+			fc.id as fc_id,fc.name as fc_name,
+			f.id as f_id,f.name as f_name,f.categoryId as f_categoryId,f.price as f_price,f.sels as f_sels,f.imageUrl as f_imageUrl,f.des as f_des 
+		from food_category fc,food f where fc.id = f.categoryId
+	</select>
+	<!-- 模糊搜索总条数 -->
+	<select id="getTotal" parameterType="Map" resultType="Integer">
+		select count(*) from food_category 
+		<if test="name != null">
+			where name like '%${name}%' 
+		</if>
+	</select>
+	<!-- 删除菜品分类信息 -->
+	<delete id="delete" parameterType="Long">
+		delete from food_category where id = #{value}
+	</delete>
+</mapper>

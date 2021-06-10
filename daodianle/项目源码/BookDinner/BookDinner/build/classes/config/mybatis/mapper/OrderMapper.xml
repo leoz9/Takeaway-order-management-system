@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ischoolbar.programmer.dao.OrderDao">
+	<!-- 多表联合查询字段处理 -->
+	<resultMap id="orderListMap" type="com.ischoolbar.programmer.entity.Order">
+		<id property="id" column="o_id" />
+		<result property="accountId" column="o_accountId" />
+		<result property="money" column="o_money" />
+		<result property="productNum" column="o_productNum" />
+		<result property="status" column="o_status" />
+		<result property="recieveName" column="o_recieveName" />
+		<result property="phone" column="o_phone" />
+		<result property="address" column="o_address" />
+		<result property="createTime" column="o_createTime" />
+		<association property="account" javaType="com.ischoolbar.programmer.entity.Account">
+			<id property="id" column="a_id" />
+			<result property="name" column="a_name" />
+			<result property="password" column="a_password" />
+			<result property="realName" column="a_realName" />
+			<result property="phone" column="a_phone" />
+			<result property="address" column="a_address" />
+		</association>
+		<collection property="orderItems" ofType="com.ischoolbar.programmer.entity.OrderItem">
+				<id property="id" column="oi_id" />
+				<result property="orderId" column="oi_orderId" />
+				<result property="money" column="oi_money" />
+				<result property="price" column="oi_price" />
+				<result property="foodId" column="oi_foodId" />
+				<result property="foodName" column="oi_foodName" />
+				<result property="foodImage" column="oi_foodImage" />
+				<result property="foodNum" column="oi_foodNum" />
+		</collection>
+	</resultMap>
+	
+	
+	<!-- 订单插入操作 -->
+	<insert id="add" useGeneratedKeys="true" keyProperty="id" parameterType="com.ischoolbar.programmer.entity.Order">
+		insert into orders(id,accountId,money,productNum,recieveName,phone,address,createTime) values(null,#{accountId},#{money},#{productNum},#{recieveName},#{phone},#{address},#{createTime})
+	</insert>
+	<!-- 订单子项插入操作 -->
+	<insert id="addItem" useGeneratedKeys="true" keyProperty="id" parameterType="com.ischoolbar.programmer.entity.Order">
+		insert into order_item(id,orderId,foodId,foodName,foodImage,price,foodNum,money) values(null,#{orderId},#{foodId},#{foodName},#{foodImage},#{price},#{foodNum},#{money})
+	</insert>
+	<!-- 订单编辑操作 -->
+	<update id="edit" parameterType="com.ischoolbar.programmer.entity.Order">
+		update orders set recieveName = #{recieveName},phone = #{phone},address = #{address},status = #{status} where id = #{id}
+	</update>
+	<!-- 订单信息搜索查询 -->
+	<select id="findList" parameterType="Map" resultMap="orderListMap">
+		select 
+			o.id as o_id,o.accountId as o_accountId,o.money as o_money,o.productNum as o_productNum,o.status as o_status,o.recieveName as o_recieveName,o.phone as o_phone,o.address as o_address,o.createTime as o_createTime, 
+		 	a.id as a_id,a.name as a_name,a.password as a_password,a.realName as a_realName,a.phone as a_phone,a.address as a_address,  
+		 	oi.id as oi_id,oi.orderId as oi_orderId,oi.money as oi_money,oi.price as oi_price,oi.foodId as oi_foodId,oi.foodName as oi_foodName,oi.foodNum as oi_foodNum,oi.foodImage as oi_foodImage  
+		 from orders o,order_item oi,account a where o.id = oi.orderId and o.accountId = a.id  
+		<if test="name != null">
+			and a.name like '%${name}%' 
+		</if>
+		<if test="accountId != null">
+			and o.accountId = #{accountId}  
+		</if>
+		<if test="status != null">
+			and o.status = #{status}  
+		</if>
+		<if test="offset != null and pageSize != null">
+			limit #{offset},#{pageSize}
+		</if>
+	</select>
+	
+	<!-- 模糊搜索总条数 -->
+	<select id="getTotal" parameterType="Map" resultType="Integer">
+		select count(*) from orders o,account a where o.accountId = a.id 
+		<if test="name != null">
+			and a.name like '%${name}%' 
+		</if>
+		<if test="accountId != null">
+			and o.accountId = #{accountId}  
+		</if>
+		<if test="status != null">
+			and o.status = #{status}  
+		</if>
+	</select>
+	<!-- 删除订单信息 -->
+	<delete id="delete" parameterType="Long">
+		delete from orders where id = #{value}
+	</delete>
+</mapper>
